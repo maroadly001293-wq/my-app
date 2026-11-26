@@ -3,22 +3,275 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>الأرض</title>
+<meta name="theme-color" content="#000000">
+<title>SMART COOKING™</title>
+
 <style>
-  body { background: #000; color: #39ff14; font-family: monospace;
-         display: flex; align-items: center; justify-content: center;
-         height: 100vh; margin: 0; }
-  a.btn { font-size: 18px; padding: 12px 26px; color: #39ff14;
-          border: 2px solid #39ff14; border-radius: 4px;
-          text-decoration: none; box-shadow: 0 0 12px #39ff14; }
-  a.btn:active { background: #39ff14; color: #000; }
-  footer { position: fixed; bottom: 12px; left: 0; right: 0;
-           text-align: center; font-size: 13px; opacity: 0.8;
-           text-shadow: 0 0 8px #39ff14; direction: ltr; }
+:root {
+  --bg: #000000;
+  --fg: #39ff14;
+  --panel: #101010;
+  --border: #333333;
+  --muted: #999999;
+  --overlay: rgba(0,0,0,0.65);
+}
+
+[data-theme="light"] {
+  --bg: #ffffff;
+  --fg: #159b08;
+  --panel: #f2f2f2;
+  --border: #dddddd;
+  --muted: #666666;
+  --overlay: rgba(0,0,0,0.35);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: monospace;
+  margin: 0;
+  min-height: 100vh;
+  min-height: 100svh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.3s, color 0.3s;
+}
+
+.menu-button {
+  position: fixed;
+  top: 18px;
+  right: 18px;
+  width: 45px;
+  height: 45px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: var(--panel);
+  color: var(--fg);
+  font-size: 25px;
+  cursor: pointer;
+  z-index: 10;
+}
+
+.menu-button:active {
+  transform: scale(0.94);
+}
+
+a.btn {
+  font-size: 18px;
+  padding: 12px 26px;
+  color: var(--fg);
+  border: 2px solid var(--fg);
+  border-radius: 4px;
+  text-decoration: none;
+  box-shadow: 0 0 12px var(--fg);
+}
+
+a.btn:active {
+  background: var(--fg);
+  color: var(--bg);
+}
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: var(--overlay);
+  opacity: 0;
+  visibility: hidden;
+  transition: 0.3s;
+  z-index: 20;
+}
+
+.overlay.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+.sidebar {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: min(300px, 85vw);
+  height: 100%;
+  height: 100dvh;
+  background: var(--panel);
+  border-left: 1px solid var(--border);
+  padding: 24px 20px;
+  transform: translateX(105%);
+  transition: transform 0.3s ease;
+  z-index: 21;
+}
+
+.sidebar.active {
+  transform: translateX(0);
+}
+
+.sidebar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 16px;
+}
+
+.sidebar-header h2 {
+  font-size: 19px;
+  margin: 0;
+}
+
+.close-button {
+  background: none;
+  border: none;
+  color: var(--fg);
+  font-size: 25px;
+  cursor: pointer;
+}
+
+.setting-title {
+  margin-top: 28px;
+  margin-bottom: 15px;
+  font-size: 15px;
+}
+
+.theme-options {
+  display: flex;
+  gap: 10px;
+}
+
+.theme-option {
+  flex: 1;
+  padding: 15px 8px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: monospace;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.theme-option.selected {
+  border: 2px solid var(--fg);
+  box-shadow: 0 0 9px var(--fg);
+}
+
+footer {
+  position: fixed;
+  bottom: 12px;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-size: 13px;
+  opacity: 0.8;
+  direction: ltr;
+}
 </style>
 </head>
+
 <body>
-  <a class="btn" href="https://github.com/maroadly001293-wq">GitHub</a>
-  <footer>Made by Pablo with love MP001293 ✌</footer>
+
+<button class="menu-button" id="menuButton"
+        aria-label="فتح الإعدادات"
+        aria-expanded="false">
+  ⋮
+</button>
+
+<div class="overlay" id="overlay"></div>
+
+<aside class="sidebar" id="sidebar"
+       aria-label="الإعدادات"
+       aria-hidden="true">
+
+  <div class="sidebar-header">
+    <h2>الإعدادات</h2>
+    <button class="close-button" id="closeButton"
+            aria-label="إغلاق">×</button>
+  </div>
+
+  <p class="setting-title">🎨 ثيم الواجهة</p>
+
+  <div class="theme-options">
+    <button class="theme-option" data-theme-choice="dark">
+      ◐ أسود
+    </button>
+
+    <button class="theme-option" data-theme-choice="light">
+      ☀ أبيض
+    </button>
+  </div>
+
+</aside>
+
+<a class="btn"
+   href="https://github.com/maroadly001293-wq">
+   GitHub
+</a>
+
+<footer>
+  Made by Pablo with love MP001293 ✌
+</footer>
+
+<script>
+const menuButton = document.getElementById("menuButton");
+const closeButton = document.getElementById("closeButton");
+const sidebar = document.getElementById("sidebar");
+const overlay = document.getElementById("overlay");
+const themeButtons = document.querySelectorAll("[data-theme-choice]");
+
+function openMenu() {
+  sidebar.classList.add("active");
+  overlay.classList.add("active");
+  sidebar.setAttribute("aria-hidden", "false");
+  menuButton.setAttribute("aria-expanded", "true");
+}
+
+function closeMenu() {
+  sidebar.classList.remove("active");
+  overlay.classList.remove("active");
+  sidebar.setAttribute("aria-hidden", "true");
+  menuButton.setAttribute("aria-expanded", "false");
+}
+
+menuButton.addEventListener("click", openMenu);
+closeButton.addEventListener("click", closeMenu);
+overlay.addEventListener("click", closeMenu);
+
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape") closeMenu();
+});
+
+function setTheme(theme) {
+  if (theme === "light") {
+    document.documentElement.dataset.theme = "light";
+  } else {
+    document.documentElement.dataset.theme = "dark";
+  }
+
+  localStorage.setItem("smartCookingTheme", theme);
+
+  themeButtons.forEach(button => {
+    const selected = button.dataset.themeChoice === theme;
+    button.classList.toggle("selected", selected);
+    button.setAttribute("aria-pressed", selected);
+  });
+
+  document.querySelector('meta[name="theme-color"]')
+    .setAttribute("content", theme === "light" ? "#ffffff" : "#000000");
+}
+
+const savedTheme = localStorage.getItem("smartCookingTheme") || "dark";
+setTheme(savedTheme);
+
+themeButtons.forEach(button => {
+  button.addEventListener("click", () => {
+    setTheme(button.dataset.themeChoice);
+  });
+});
+</script>
+
 </body>
 </html>
