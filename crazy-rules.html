@@ -18,10 +18,33 @@ canvas{position:fixed;inset:0;width:100%;height:100%;display:block}
 #menu p{margin:0;font-size:20px;line-height:1.6;max-width:320px;font-family:system-ui,sans-serif}
 #go{font:inherit;font-size:30px;padding:10px 44px;border:0;border-radius:40px;background:var(--bad);color:#fff;cursor:pointer}
 #go:focus-visible{outline:3px solid var(--sun);outline-offset:3px}
+
+#homeBtn {
+  display: none;
+  position: fixed;
+  top: calc(env(safe-area-inset-top, 0px) + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 5;
+  padding: 5px 14px;
+  border: 1px solid var(--sun);
+  border-radius: 20px;
+  background: rgba(27,17,64,.9);
+  color: var(--sun);
+  text-decoration: none;
+  font-size: 15px;
+  pointer-events: auto;
+}
+
 </style>
 </head>
 <body>
 <canvas id="c"></canvas>
+
+<a id="homeBtn" href="index.html"
+   aria-label="العودة إلى الصفحة الرئيسية">
+   ⌂ الرئيسية
+</a>
 <div id="hud"><span id="sc">النقاط: 0</span><span id="lv">❤❤❤</span></div>
 <div id="rule"></div>
 <div id="legend"></div>
@@ -50,6 +73,7 @@ let best=0;try{best=+localStorage.getItem('crbest')||0}catch(e){}
 let P,orbs,score,lives,fl,ruleT,spawnT,ang,run=false,last=0,shake=0,pop=[];
 let ptr={x:0,y:0};
 function start(){
+ $('homeBtn').style.display='block';
  P={x:W/2,y:H*0.7,r:20};orbs=[];pop=[];score=0;lives=3;fl={};ruleT=3;spawnT=0;ang=0;shake=0;run=true;
  ptr={x:P.x,y:P.y};$('menu').style.display='none';hud();$('rule').textContent='';legend();last=performance.now();
 }
