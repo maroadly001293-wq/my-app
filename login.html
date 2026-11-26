@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#000000">
+<title>الدخول — SMART COOKING™</title>
+<style>
+:root{--bg:#000;--fg:#39ff14;--panel:#101010;--border:#333;--muted:#999;--err:#ff5c65}
+[data-theme="light"]{--bg:#fff;--fg:#159b08;--panel:#f2f2f2;--border:#ddd;--muted:#666;--err:#c0202b}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:monospace;margin:0;min-height:100svh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px 20px 60px}
+.card{width:min(100%,360px);background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:22px}
+h1{font-size:22px;margin:0 0 6px;text-align:center}
+.sub{color:var(--muted);font-size:13px;text-align:center;margin:0 0 18px}
+.tabs{display:flex;gap:8px;margin-bottom:8px}
+.tab{flex:1;padding:10px;border:1px solid var(--border);border-radius:9px;background:var(--bg);color:var(--fg);font-family:monospace;font-size:14px;cursor:pointer}
+.tab.active{border:2px solid var(--fg);box-shadow:0 0 9px var(--fg)}
+label{display:block;font-size:13px;margin:12px 0 6px}
+input{width:100%;padding:12px;border:1px solid var(--border);border-radius:9px;background:var(--bg);color:var(--fg);font-family:monospace;font-size:16px;direction:ltr;text-align:left}
+input:focus{outline:2px solid var(--fg);outline-offset:1px}
+.submit{width:100%;margin-top:18px;padding:13px;border:2px solid var(--fg);border-radius:6px;background:transparent;color:var(--fg);font-family:monospace;font-size:17px;cursor:pointer;box-shadow:0 0 12px var(--fg)}
+.submit:active{background:var(--fg);color:var(--bg)}
+.submit:disabled{opacity:.5}
+.msg{min-height:20px;margin-top:14px;font-size:13px;line-height:1.5;text-align:center}
+.msg.err{color:var(--err)}
+.back{margin-top:18px;color:var(--muted);font-size:13px;text-decoration:none}
+footer{position:fixed;bottom:12px;left:0;right:0;text-align:center;font-size:13px;opacity:.8;direction:ltr}
+</style>
+</head>
+<body>
+<div class="card">
+  <h1>SMART COOKING™</h1>
+  <p class="sub">سجّل دخولك أو أنشئ حساباً</p>
+
+  <div class="tabs">
+    <button type="button" class="tab active" id="tabLogin">دخول</button>
+    <button type="button" class="tab" id="tabSignup">حساب جديد</button>
+  </div>
+
+  <form id="authForm">
+    <label for="email">البريد الإلكتروني</label>
+    <input id="email" type="email" autocomplete="email" required>
+    <label for="password">كلمة المرور (8 أحرف على الأقل)</label>
+    <input id="password" type="password" autocomplete="current-password" required>
+    <button class="submit" id="submit" type="submit">دخول</button>
+  </form>
+
+  <div class="msg" id="msg"></div>
+</div>
+
+<a class="back" href="index.html">← العودة للرئيسية</a>
+
+<footer>Made by Pablo with love MP001293 ✌</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="auth.js"></script>
+<script>
+const $ = id => document.getElementById(id);
+let mode = "login";
+
+try {
+  if (localStorage.getItem("smartCookingTheme") === "light") {
+    document.documentElement.dataset.theme = "light";
+  }
+} catch (e) {}
+
+function say(text, type) {
+  $("msg").textContent = text;
+  $("msg").className = "msg" + (type === "err" ? " err" : "");
+}
+
+function setMode(m) {
+  mode = m;
+  $("tabLogin").classList.toggle("active", m === "login");
+  $("tabSignup").classList.toggle("active", m === "signup");
+  $("submit").textContent = m === "login" ? "دخول" : "إنشاء حساب";
+  $("password").autocomplete = m === "login" ? "current-password" : "new-password";
+  say("", "ok");
+}
+
+$("tabLogin").addEventListener("click", () => setMode("login"));
+$("tabSignup").addEventListener("click", () => setMode("signup"));
+
+$("authForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const email = $("email").value.trim();
+  const password = $("password").value;
+  if (!email || !password) return say("اكتب البريد وكلمة المرور.", "err");
+  if (mode === "signup" && password.length < 8) {
+    return say("كلمة المرور يجب ألا تقل عن 8 أحرف.", "err");
+  }
+  $("submit").disabled = true;
+  say("جارٍ التنفيذ...", "ok");
+  const r = mode === "login"
+    ? await Auth.signIn(email, password)
+    : await Auth.signUp(email, password);
+  $("submit").disabled = false;
+  if (!r.ok) return say(r.error, "err");
+  if (r.needsConfirm) {
+    return say("تم إنشاء الحساب. افتح بريدك واضغط رابط التأكيد ثم ارجع وادخل.", "ok");
+  }
+  say("تم! جارٍ التحويل...", "ok");
+  setTimeout(() => { location.href = "index.html"; }, 600);
+});
+
+(async () => {
+  try {
+    const u = await Auth.getUser();
+    if (u) location.href = "index.html";
+  } catch (e) {}
+})();
+</script>
+</body>
+</html>

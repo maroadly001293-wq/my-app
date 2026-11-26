@@ -221,6 +221,11 @@ body {
   font-size: 13px;
 }
 
+
+.account-text{font-size:13px;color:var(--muted);margin:0 0 12px;word-break:break-all}
+.account-btn{display:block;width:100%;padding:13px 8px;border:1px solid var(--border);border-radius:9px;background:var(--bg);color:var(--fg);font-family:monospace;font-size:14px;text-align:center;text-decoration:none;cursor:pointer}
+.account-btn:active{border-color:var(--fg);box-shadow:0 0 9px var(--fg)}
+[hidden]{display:none !important}
 </style>
 </head>
 
@@ -254,6 +259,14 @@ body {
     <button class="theme-option" data-theme-choice="light">
       ☀ أبيض
     </button>
+  </div>
+
+
+  <div id="accountBox">
+    <p class="setting-title">👤 الحساب</p>
+    <p class="account-text" id="accountText">غير مسجّل الدخول</p>
+    <a class="account-btn" id="loginLink" href="login.html">تسجيل الدخول</a>
+    <button class="account-btn" id="logoutBtn" hidden>تسجيل الخروج</button>
   </div>
 
 </aside>
@@ -347,5 +360,31 @@ themeButtons.forEach(button => {
 });
 </script>
 
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="auth.js"></script>
+<script>
+(async function () {
+  const text = document.getElementById("accountText");
+  const loginLink = document.getElementById("loginLink");
+  const logoutBtn = document.getElementById("logoutBtn");
+  function show(user) {
+    if (user) {
+      text.textContent = user.email;
+      loginLink.hidden = true;
+      logoutBtn.hidden = false;
+    } else {
+      text.textContent = "غير مسجّل الدخول";
+      loginLink.hidden = false;
+      logoutBtn.hidden = true;
+    }
+  }
+  try { show(await Auth.getUser()); } catch (e) { show(null); }
+  logoutBtn.addEventListener("click", async () => {
+    await Auth.signOut();
+    show(null);
+  });
+})();
+</script>
 </body>
 </html>
