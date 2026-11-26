@@ -169,6 +169,58 @@ footer {
   opacity: 0.8;
   direction: ltr;
 }
+
+body {
+  flex-direction: column;
+  gap: 24px;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 22px;
+  width: min(88%, 360px);
+}
+
+.game-card {
+  display: block;
+  width: 100%;
+  padding: 22px;
+  border: 1px solid #ff922e;
+  border-radius: 12px;
+  background: #160e08;
+  color: #ff922e;
+  text-decoration: none;
+  text-align: center;
+  box-shadow: 0 0 12px #ff922e55;
+  transition: 0.25s;
+}
+
+.game-card:active {
+  transform: scale(0.97);
+  box-shadow: 0 0 22px #ff922e;
+}
+
+.game-icon {
+  font-size: 30px;
+  margin-bottom: 10px;
+}
+
+.game-title {
+  font-size: 21px;
+  font-weight: bold;
+}
+
+.game-action {
+  display: inline-block;
+  margin-top: 15px;
+  padding: 8px 20px;
+  border: 1px solid #ff922e;
+  border-radius: 5px;
+  font-size: 13px;
+}
+
 </style>
 </head>
 
@@ -206,10 +258,23 @@ footer {
 
 </aside>
 
-<a class="btn"
-   href="https://github.com/maroadly001293-wq">
-   GitHub
-</a>
+<main class="content">
+
+  <a class="game-card"
+     href="crazy-rules.html">
+
+    <div class="game-icon">🎮</div>
+    <div class="game-title">CRAZY RULES</div>
+    <div class="game-action">PLAY NOW →</div>
+
+  </a>
+
+  <a class="btn"
+     href="https://github.com/maroadly001293-wq">
+     GitHub
+  </a>
+
+</main>
 
 <footer>
   Made by Pablo with love MP001293 ✌

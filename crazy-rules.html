@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>قوانين مجنونة</title>
+<link href="https://fonts.googleapis.com/css2?family=Lalezar&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#1b1140;--good:#2ee6d6;--bad:#ff3d81;--ink:#fff4e0;--sun:#ffb62e;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html,body{height:100%;margin:0;background:var(--bg);color:var(--ink);overflow:hidden;touch-action:none;-webkit-user-select:none;user-select:none;font-family:'Lalezar',system-ui,sans-serif}
+canvas{position:fixed;inset:0;width:100%;height:100%;display:block}
+#hud{position:fixed;top:env(safe-area-inset-top,0px);left:0;right:0;display:flex;justify-content:space-between;padding:10px 16px;font-size:22px;pointer-events:none}
+#rule{position:fixed;top:calc(env(safe-area-inset-top,0px) + 52px);left:0;right:0;text-align:center;font-size:30px;color:var(--sun);pointer-events:none;transition:transform .25s,opacity .25s}
+#legend{position:fixed;bottom:calc(env(safe-area-inset-bottom,0px) + 14px);left:0;right:0;text-align:center;font-size:18px;pointer-events:none}
+#legend i{display:inline-block;width:14px;height:14px;border-radius:50%;margin:0 4px 0 8px;vertical-align:-1px}
+#menu{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;background:rgba(27,17,64,.92);text-align:center;padding:24px}
+#menu h1{font-size:56px;margin:0;font-weight:400;color:var(--sun)}
+#menu p{margin:0;font-size:20px;line-height:1.6;max-width:320px;font-family:system-ui,sans-serif}
+#go{font:inherit;font-size:30px;padding:10px 44px;border:0;border-radius:40px;background:var(--bad);color:#fff;cursor:pointer}
+#go:focus-visible{outline:3px solid var(--sun);outline-offset:3px}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div id="hud"><span id="sc">النقاط: 0</span><span id="lv">❤❤❤</span></div>
+<div id="rule"></div>
+<div id="legend"></div>
+<div id="menu">
+<h1>قوانين مجنونة</h1>
+<p>حرّك إصبعك لتلتقط الكرات الجيدة وتتجنب السيئة.<br>لكن كل ٦ ثوانٍ يتغير قانون اللعبة بلا إنذار!</p>
+<p id="best"></p>
+<button id="go">العب</button>
+</div>
+<script>
+const cv=document.getElementById('c'),cx=cv.getContext('2d');
+const $=id=>document.getElementById(id);
+let W,H,dpr;
+function size(){dpr=Math.min(devicePixelRatio||1,2);W=innerWidth;H=innerHeight;cv.width=W*dpr;cv.height=H*dpr;cx.setTransform(dpr,0,0,dpr,0,0)}
+addEventListener('resize',size);size();
+const GOOD='#2ee6d6',BAD='#ff3d81';
+const RULES=[
+{n:'التحكم معكوس!',f:'inv'},
+{n:'الألوان تبدلت!',f:'swap'},
+{n:'الجاذبية للأعلى!',f:'up'},
+{n:'العالم يدور!',f:'rot'},
+{n:'كل شيء أسرع!',f:'fast'},
+{n:'انطفأت الأنوار!',f:'dark'}
+];
+let best=0;try{best=+localStorage.getItem('crbest')||0}catch(e){}
+let P,orbs,score,lives,fl,ruleT,spawnT,ang,run=false,last=0,shake=0,pop=[];
+let ptr={x:0,y:0};
+function start(){
+ P={x:W/2,y:H*0.7,r:20};orbs=[];pop=[];score=0;lives=3;fl={};ruleT=3;spawnT=0;ang=0;shake=0;run=true;
+ ptr={x:P.x,y:P.y};$('menu').style.display='none';hud();$('rule').textContent='';legend();last=performance.now();
+}
+function hud(){$('sc').textContent='النقاط: '+score;$('lv').textContent='❤'.repeat(Math.max(lives,0))}
+function legend(){
+ const g=fl.swap?BAD:GOOD,b=fl.swap?GOOD:BAD;
+ $('legend').innerHTML='<i style="background:'+g+'"></i>التقطها<i style="background:'+b+'"></i>تجنبها';
+}
+function newRule(){
+ const r=RULES[Math.floor(Math.random()*RULES.length)];
+ fl={};fl[r.f]=true;
+ const el=$('rule');el.textContent=r.n;el.style.transform='scale(1.4)';
+ setTimeout(()=>el.style.transform='scale(1)',250);
+ legend();ruleT=6;
+}
+function toWorld(x,y){
+ let dx=x-W/2,dy=y-H/2;
+ if(fl.rot){const a=-ang,c=Math.cos(a),s=Math.sin(a);[dx,dy]=[dx*c-dy*s,dx*s+dy*c]}
+ return[W/2+dx,H/2+dy];
+}
+function move(e){
+ let x=e.clientX,y=e.clientY;
+ if(fl.inv){x=W-x;y=H-y}
+ ptr={x,y};
+}
+cv.addEventListener('pointerdown',move);
+cv.addEventListener('pointermove',move);
+$('go').addEventListener('click',start);
+function spawn(){
+ const good=Math.random()<0.5;
+ const r=12+Math.random()*12;
+ orbs.push({x:r+Math.random()*(W-2*r),y:fl.up?H+r:-r,r,good,vy:(90+Math.random()*110+score*2)*(fl.fast?1.8:1)*(fl.up?-1:1),vx:(Math.random()-.5)*60});
+}
+function burst(x,y,col){for(let i=0;i<10;i++){const a=Math.random()*6.28,s=60+Math.random()*120;pop.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s,t:.5,col})}}
+function update(dt){
+ ruleT-=dt;if(ruleT<=0)newRule();
+ if(fl.rot)ang+=dt*0.6;else ang*=0.9;
+ const [tx,ty]=toWorld(ptr.x,ptr.y);
+ const k=1-Math.pow(0.0005,dt);
+ P.x+=(tx-P.x)*k;P.y+=(ty-P.y)*k;
+ spawnT-=dt;if(spawnT<=0){spawn();spawnT=Math.max(0.22,0.6-score*0.004)*(fl.fast?0.6:1)}
+ for(const o of orbs){
+  o.y+=o.vy*dt;o.x+=o.vx*dt;
+  if(o.x<o.r||o.x>W-o.r)o.vx*=-1;
+  const d=Math.hypot(o.x-P.x,o.y-P.y);
+  if(d<o.r+P.r){
+   o.dead=true;
+   const isGood=fl.swap?!o.good:o.good;
+   burst(o.x,o.y,isGood?GOOD:BAD);
+   if(isGood){score++}else{lives--;shake=.3;if(navigator.vibrate)navigator.vibrate(60)}
+   hud();
+  }
+  if(o.y>H+60||o.y<-60)o.dead=true;
+ }
+ orbs=orbs.filter(o=>!o.dead);
+ for(const p of pop){p.x+=p.vx*dt;p.y+=p.vy*dt;p.t-=dt}
+ pop=pop.filter(p=>p.t>0);
+ shake=Math.max(0,shake-dt);
+ if(lives<=0)over();
+}
+function over(){
+ run=false;
+ if(score>best){best=score;try{localStorage.setItem('crbest',best)}catch(e){}}
+ $('menu').querySelector('h1').textContent='انتهت اللعبة';
+ $('menu').querySelector('p').innerHTML='جمعت '+score+' نقطة. القوانين فازت هذه المرة!';
+ $('best').textContent='أفضل نتيجة: '+best;
+ $('go').textContent='جرّب مجددًا';
+ $('menu').style.display='flex';
+}
+function draw(){
+ cx.clearRect(0,0,W,H);
+ cx.save();
+ if(shake>0)cx.translate((Math.random()-.5)*10,(Math.random()-.5)*10);
+ cx.translate(W/2,H/2);cx.rotate(ang);cx.translate(-W/2,-H/2);
+ for(const o of orbs){
+  const isGood=o.good;
+  cx.fillStyle=(fl.swap?!isGood:isGood)?GOOD:BAD;
+  cx.beginPath();cx.arc(o.x,o.y,o.r,0,6.283);cx.fill();
+ }
+ for(const p of pop){cx.globalAlpha=p.t*2;cx.fillStyle=p.col;cx.fillRect(p.x-2,p.y-2,4,4)}
+ cx.globalAlpha=1;
+ cx.fillStyle='#fff4e0';cx.beginPath();cx.arc(P.x,P.y,P.r,0,6.283);cx.fill();
+ cx.strokeStyle='#ffb62e';cx.lineWidth=4;cx.beginPath();cx.arc(P.x,P.y,P.r+5,0,6.283);cx.stroke();
+ cx.restore();
+ if(fl.dark){
+  const[sx,sy]=rot(P.x,P.y);
+  const g=cx.createRadialGradient(sx,sy,40,sx,sy,170);
+  g.addColorStop(0,'rgba(27,17,64,0)');g.addColorStop(1,'rgba(27,17,64,.98)');
+  cx.fillStyle=g;cx.fillRect(0,0,W,H);
+ }
+}
+function rot(x,y){
+ const dx=x-W/2,dy=y-H/2,c=Math.cos(ang),s=Math.sin(ang);
+ return[W/2+dx*c-dy*s,H/2+dx*s+dy*c];
+}
+function loop(t){
+ const dt=Math.min((t-last)/1000,0.05);last=t;
+ if(run)update(dt);
+ draw();requestAnimationFrame(loop);
+}
+$('best').textContent=best?'أفضل نتيجة: '+best:'';
+P={x:W/2,y:H/2,r:20};orbs=[];pop=[];fl={};ang=0;shake=0;
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>
