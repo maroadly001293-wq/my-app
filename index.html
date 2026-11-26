@@ -240,10 +240,139 @@ body{justify-content:flex-start;padding:84px 0 0;}
 
 /* footer-step */
 footer{position:static !important;width:100%;margin-top:auto;padding:36px 12px 22px;text-align:center}
+
+/* BACKGROUND STUDIO */
+html {
+  background: var(--bg);
+}
+
+body {
+  background: transparent;
+  isolation: isolate;
+}
+
+#backgroundLayer {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+  background: var(--bg);
+}
+
+#backgroundImage {
+  position: absolute;
+  inset: -18px;
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  filter: blur(var(--background-blur, 0px));
+  transform: scale(1.04);
+  opacity: 0;
+  transition: opacity 0.25s;
+}
+
+#backgroundStudio {
+  margin-top: 28px;
+  padding-top: 18px;
+  border-top: 1px solid var(--border);
+}
+
+#backgroundStudio h3 {
+  margin: 0 0 15px;
+  font-size: 15px;
+}
+
+.background-modes {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 7px;
+}
+
+.background-mode {
+  padding: 11px 4px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: monospace;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.background-mode.selected {
+  border: 2px solid var(--fg);
+  box-shadow: 0 0 8px var(--fg);
+}
+
+.background-panel {
+  margin-top: 17px;
+}
+
+.background-field {
+  display: block;
+  margin-top: 15px;
+  font-size: 13px;
+  color: var(--fg);
+}
+
+.background-field input[type="color"] {
+  display: block;
+  width: 100%;
+  height: 42px;
+  margin-top: 8px;
+  padding: 3px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background: var(--bg);
+}
+
+.background-field input[type="range"] {
+  display: block;
+  width: 100%;
+  margin-top: 12px;
+  accent-color: var(--fg);
+}
+
+.background-field input[type="file"] {
+  display: block;
+  width: 100%;
+  margin-top: 10px;
+  color: var(--muted);
+  font-family: monospace;
+  font-size: 11px;
+}
+
+.background-value {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.background-reset {
+  width: 100%;
+  margin-top: 20px;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: monospace;
+  cursor: pointer;
+}
+
+.background-status {
+  min-height: 18px;
+  margin: 10px 0 0;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.6;
+}
+
 </style>
 </head>
 
 <body>
+<div id="backgroundLayer" aria-hidden="true"><div id="backgroundImage"></div></div>
 
 <button class="menu-button" id="menuButton"
         aria-label="فتح الإعدادات"
@@ -275,6 +404,63 @@ footer{position:static !important;width:100%;margin-top:auto;padding:36px 12px 2
     </button>
   </div>
 
+
+
+  <section id="backgroundStudio">
+    <h3>🖼 BACKGROUND STUDIO</h3>
+
+    <div class="background-modes">
+      <button class="background-mode selected" data-background-mode="color" aria-pressed="true">COLOR</button>
+      <button class="background-mode" data-background-mode="gradient" aria-pressed="false">GRADIENT</button>
+      <button class="background-mode" data-background-mode="image" aria-pressed="false">IMAGE</button>
+    </div>
+
+    <div class="background-panel" data-background-panel="color">
+      <label class="background-field">
+        لون الخلفية
+        <input type="color" id="backgroundColor" value="#000000">
+      </label>
+    </div>
+
+    <div class="background-panel" data-background-panel="gradient" hidden>
+      <label class="background-field">
+        اللون الأول
+        <input type="color" id="gradientColor1" value="#000000">
+      </label>
+
+      <label class="background-field">
+        اللون الثاني
+        <input type="color" id="gradientColor2" value="#159b08">
+      </label>
+
+      <label class="background-field">
+        زاوية التدرج:
+        <span class="background-value" id="gradientAngleValue">135°</span>
+        <input type="range" id="gradientAngle" min="0" max="360" value="135">
+      </label>
+    </div>
+
+    <div class="background-panel" data-background-panel="image" hidden>
+      <label class="background-field">
+        اختر صورة من هاتفك
+        <input type="file" id="backgroundImageInput" accept="image/*">
+      </label>
+
+      <label class="background-field">
+        تمويه الصورة:
+        <span class="background-value" id="backgroundBlurValue">0%</span>
+        <input type="range" id="backgroundBlur" min="0" max="100" value="0">
+      </label>
+    </div>
+
+    <button class="background-reset" id="backgroundReset">
+      ↺ إعادة الخلفية الافتراضية
+    </button>
+
+    <p class="background-status" id="backgroundStatus" aria-live="polite">
+      اختر نمط الخلفية الذي تريده.
+    </p>
+  </section>
 
   <div id="accountBox">
     <p class="setting-title">👤 الحساب</p>
@@ -380,6 +566,299 @@ themeButtons.forEach(button => {
 });
 </script>
 
+
+
+<script>
+(function () {
+  const layer = document.getElementById("backgroundLayer");
+  const imageLayer = document.getElementById("backgroundImage");
+  const modeButtons = document.querySelectorAll("[data-background-mode]");
+  const panels = document.querySelectorAll("[data-background-panel]");
+  const colorInput = document.getElementById("backgroundColor");
+  const color1Input = document.getElementById("gradientColor1");
+  const color2Input = document.getElementById("gradientColor2");
+  const angleInput = document.getElementById("gradientAngle");
+  const angleValue = document.getElementById("gradientAngleValue");
+  const imageInput = document.getElementById("backgroundImageInput");
+  const blurInput = document.getElementById("backgroundBlur");
+  const blurValue = document.getElementById("backgroundBlurValue");
+  const resetButton = document.getElementById("backgroundReset");
+  const status = document.getElementById("backgroundStatus");
+
+  const STORAGE_KEY = "smartCookingBackground";
+  const DB_NAME = "SmartCookingBackgroundDB";
+  const DB_STORE = "backgrounds";
+  const DB_KEY = "user-background";
+
+  const defaults = {
+    mode: "color",
+    color: "#000000",
+    color1: "#000000",
+    color2: "#159b08",
+    angle: 135,
+    blur: 0
+  };
+
+  let settings = { ...defaults };
+  let imageUrl = null;
+
+  function say(message) {
+    status.textContent = message;
+  }
+
+  function saveSettings() {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
+    } catch (error) {
+      say("تعذر حفظ الإعدادات في هذا المتصفح.");
+    }
+  }
+
+  function openDatabase() {
+    return new Promise((resolve, reject) => {
+      if (!("indexedDB" in window)) {
+        reject(new Error("IndexedDB غير مدعوم"));
+        return;
+      }
+
+      const request = indexedDB.open(DB_NAME, 1);
+
+      request.onupgradeneeded = () => {
+        const db = request.result;
+        if (!db.objectStoreNames.contains(DB_STORE)) {
+          db.createObjectStore(DB_STORE);
+        }
+      };
+
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => reject(request.error);
+    });
+  }
+
+  async function saveImage(blob) {
+    const db = await openDatabase();
+
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction(DB_STORE, "readwrite");
+      transaction.objectStore(DB_STORE).put(blob, DB_KEY);
+
+      transaction.oncomplete = () => {
+        db.close();
+        resolve();
+      };
+
+      transaction.onerror = () => {
+        db.close();
+        reject(transaction.error);
+      };
+    });
+  }
+
+  async function loadImage() {
+    const db = await openDatabase();
+
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction(DB_STORE, "readonly");
+      const request = transaction.objectStore(DB_STORE).get(DB_KEY);
+
+      request.onsuccess = () => {
+        const result = request.result || null;
+        db.close();
+        resolve(result);
+      };
+
+      request.onerror = () => {
+        db.close();
+        reject(request.error);
+      };
+    });
+  }
+
+  async function deleteImage() {
+    const db = await openDatabase();
+
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction(DB_STORE, "readwrite");
+      transaction.objectStore(DB_STORE).delete(DB_KEY);
+
+      transaction.oncomplete = () => {
+        db.close();
+        resolve();
+      };
+
+      transaction.onerror = () => {
+        db.close();
+        reject(transaction.error);
+      };
+    });
+  }
+
+  function showImage(blob) {
+    if (imageUrl) URL.revokeObjectURL(imageUrl);
+
+    imageUrl = URL.createObjectURL(blob);
+    imageLayer.style.backgroundImage = `url("${imageUrl}")`;
+    imageLayer.style.opacity = "1";
+  }
+
+  function applyBackground() {
+    if (settings.mode === "gradient") {
+      layer.style.background =
+        `linear-gradient(${settings.angle}deg, ${settings.color1}, ${settings.color2})`;
+    } else {
+      layer.style.background = settings.color;
+    }
+
+    imageLayer.style.setProperty(
+      "--background-blur",
+      `${settings.blur * 0.15}px`
+    );
+
+    imageLayer.style.opacity =
+      settings.mode === "image" && imageUrl ? "1" : "0";
+
+    modeButtons.forEach(button => {
+      const selected = button.dataset.backgroundMode === settings.mode;
+      button.classList.toggle("selected", selected);
+      button.setAttribute("aria-pressed", String(selected));
+    });
+
+    panels.forEach(panel => {
+      panel.hidden = panel.dataset.backgroundPanel !== settings.mode;
+    });
+  }
+
+  function syncInputs() {
+    colorInput.value = settings.color;
+    color1Input.value = settings.color1;
+    color2Input.value = settings.color2;
+    angleInput.value = settings.angle;
+    blurInput.value = settings.blur;
+    angleValue.textContent = `${settings.angle}°`;
+    blurValue.textContent = `${settings.blur}%`;
+  }
+
+  function update() {
+    applyBackground();
+    saveSettings();
+  }
+
+  modeButtons.forEach(button => {
+    button.addEventListener("click", () => {
+      settings.mode = button.dataset.backgroundMode;
+      update();
+    });
+  });
+
+  colorInput.addEventListener("input", () => {
+    settings.color = colorInput.value;
+    update();
+  });
+
+  color1Input.addEventListener("input", () => {
+    settings.color1 = color1Input.value;
+    update();
+  });
+
+  color2Input.addEventListener("input", () => {
+    settings.color2 = color2Input.value;
+    update();
+  });
+
+  angleInput.addEventListener("input", () => {
+    settings.angle = Number(angleInput.value);
+    angleValue.textContent = `${settings.angle}°`;
+    update();
+  });
+
+  blurInput.addEventListener("input", () => {
+    settings.blur = Number(blurInput.value);
+    blurValue.textContent = `${settings.blur}%`;
+    update();
+  });
+
+  imageInput.addEventListener("change", async () => {
+    const file = imageInput.files && imageInput.files[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      say("الملف المختار ليس صورة.");
+      imageInput.value = "";
+      return;
+    }
+
+    say("جارٍ حفظ الصورة...");
+
+    try {
+      await saveImage(file);
+      showImage(file);
+      settings.mode = "image";
+      update();
+      say("تم حفظ الصورة بنجاح على هذا الجهاز.");
+    } catch (error) {
+      say("تعذر حفظ الصورة. تحقق من مساحة المتصفح.");
+    }
+  });
+
+  resetButton.addEventListener("click", async () => {
+    settings = { ...defaults };
+    syncInputs();
+
+    if (imageUrl) {
+      URL.revokeObjectURL(imageUrl);
+      imageUrl = null;
+    }
+
+    imageLayer.style.backgroundImage = "none";
+    imageLayer.style.opacity = "0";
+
+    try {
+      await deleteImage();
+    } catch (error) {
+      say("أعيدت الإعدادات، لكن تعذر حذف الصورة المحفوظة.");
+    }
+
+    update();
+    imageInput.value = "";
+    say("تمت إعادة الخلفية إلى الوضع الافتراضي.");
+  });
+
+  async function initialize() {
+    try {
+      const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+
+      if (saved && typeof saved === "object" && !Array.isArray(saved)) {
+        settings = { ...defaults, ...saved };
+      }
+    } catch (error) {
+      settings = { ...defaults };
+    }
+
+    const validModes = ["color", "gradient", "image"];
+    if (!validModes.includes(settings.mode)) settings.mode = "color";
+
+    if (!/^#[0-9a-fA-F]{6}$/.test(settings.color)) settings.color = defaults.color;
+    if (!/^#[0-9a-fA-F]{6}$/.test(settings.color1)) settings.color1 = defaults.color1;
+    if (!/^#[0-9a-fA-F]{6}$/.test(settings.color2)) settings.color2 = defaults.color2;
+
+    settings.angle = Math.max(0, Math.min(360, Number(settings.angle) || 0));
+    settings.blur = Math.max(0, Math.min(100, Number(settings.blur) || 0));
+
+    syncInputs();
+
+    try {
+      const savedImage = await loadImage();
+      if (savedImage) showImage(savedImage);
+    } catch (error) {
+      say("تعذر استرجاع الصورة المحفوظة.");
+    }
+
+    applyBackground();
+  }
+
+  initialize();
+})();
+</script>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <script src="auth.js"></script>
