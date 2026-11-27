@@ -1,0 +1,193 @@
+/* SMART COOKING - DANNY WIDGET */
+
+#danny-root {
+  --danny-accent: #39ff14;
+  --danny-bg: #101010;
+  --danny-panel: #181818;
+  --danny-border: #333;
+  font-family: monospace;
+  direction: rtl;
+}
+
+#danny-root * {
+  box-sizing: border-box;
+}
+
+#danny-bubble {
+  position: fixed;
+  right: 18px;
+  bottom: 20px;
+  width: 62px;
+  height: 62px;
+  padding: 3px;
+  border: 2px solid var(--danny-accent);
+  border-radius: 50%;
+  background: #080808;
+  box-shadow: 0 0 13px #39ff1466;
+  cursor: pointer;
+  z-index: 9998;
+  transition: transform .2s, box-shadow .2s;
+}
+
+#danny-bubble:active {
+  transform: scale(.92);
+}
+
+#danny-bubble img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border-radius: 50%;
+}
+
+#danny-panel {
+  position: fixed;
+  right: 14px;
+  bottom: 94px;
+  width: min(360px, calc(100vw - 28px));
+  height: min(510px, calc(100dvh - 125px));
+  min-height: 300px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid var(--danny-border);
+  border-radius: 17px;
+  background: var(--danny-bg);
+  color: #fff;
+  box-shadow: 0 0 24px #000b, 0 0 12px #39ff1422;
+  z-index: 9999;
+  animation: danny-appear .2s ease;
+}
+
+#danny-panel[hidden] {
+  display: none;
+}
+
+@keyframes danny-appear {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+#danny-header {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 12px;
+  background: var(--danny-panel);
+  border-bottom: 1px solid var(--danny-border);
+}
+
+#danny-header img {
+  width: 42px;
+  height: 42px;
+  object-fit: contain;
+  border-radius: 50%;
+  background: #080808;
+}
+
+#danny-identity {
+  flex: 1;
+  min-width: 0;
+}
+
+#danny-identity strong {
+  display: block;
+  color: var(--danny-accent);
+  font-size: 16px;
+}
+
+#danny-identity small {
+  display: block;
+  margin-top: 4px;
+  color: #999;
+  font-size: 10px;
+}
+
+#danny-close {
+  width: 35px;
+  height: 35px;
+  border: 1px solid var(--danny-border);
+  border-radius: 8px;
+  background: transparent;
+  color: #fff;
+  font-size: 22px;
+  cursor: pointer;
+}
+
+#danny-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+}
+
+.danny-message {
+  max-width: 88%;
+  padding: 11px 13px;
+  border: 1px solid var(--danny-border);
+  border-radius: 12px 12px 12px 3px;
+  background: #202020;
+  color: #eee;
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+#danny-status {
+  padding: 10px 13px;
+  border-top: 1px solid var(--danny-border);
+  color: #999;
+  font-size: 11px;
+  text-align: center;
+}
+
+#danny-composer {
+  display: flex;
+  gap: 7px;
+  padding: 11px;
+  border-top: 1px solid var(--danny-border);
+  background: var(--danny-panel);
+}
+
+#danny-input {
+  flex: 1;
+  min-width: 0;
+  padding: 11px;
+  border: 1px solid var(--danny-border);
+  border-radius: 9px;
+  background: #080808;
+  color: #fff;
+  font-family: inherit;
+  font-size: 12px;
+}
+
+#danny-input:disabled {
+  opacity: .55;
+}
+
+#danny-send {
+  padding: 0 14px;
+  border: 0;
+  border-radius: 9px;
+  background: var(--danny-accent);
+  color: #000;
+  font-family: inherit;
+  font-weight: bold;
+}
+
+#danny-send:disabled {
+  opacity: .4;
+}
+
+@media (max-width: 420px) {
+  #danny-bubble {
+    width: 56px;
+    height: 56px;
+    right: 13px;
+    bottom: 16px;
+  }
+
+  #danny-panel {
+    right: 10px;
+    bottom: 82px;
+    width: calc(100vw - 20px);
+  }
+}
