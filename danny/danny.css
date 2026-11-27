@@ -191,3 +191,53 @@
     width: calc(100vw - 20px);
   }
 }
+
+/* DANNY CONVERSATION ENGINE */
+
+.danny-message {
+  display: block;
+  width: fit-content;
+  max-width: 88%;
+  margin-bottom: 12px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.danny-message--danny {
+  margin-right: 0;
+  margin-left: auto;
+}
+
+.danny-message--user {
+  margin-right: auto;
+  margin-left: 0;
+  border-color: #39ff1455;
+  background: #172517;
+  color: #fff;
+  border-radius: 12px 12px 3px 12px;
+}
+
+.danny-typing {
+  color: #39ff14;
+  opacity: .75;
+  animation: danny-thinking 1s infinite alternate;
+}
+
+@keyframes danny-thinking {
+  from { opacity: .4; }
+  to { opacity: 1; }
+}
+
+#danny-send {
+  cursor: pointer;
+}
+
+#danny-input:focus {
+  outline: 1px solid #39ff14;
+  border-color: #39ff14;
+}
+
+#danny-messages {
+  display: flex;
+  flex-direction: column;
+}
