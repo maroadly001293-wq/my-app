@@ -53,5 +53,11 @@ const Auth = (function () {
     return data.session ? data.session.user : null;
   }
 
-  return { signUp, signIn, signOut, getUser };
+  async function getToken() {
+    if (!client) return null;
+    const { data } = await client.auth.getSession();
+    return data.session ? data.session.access_token : null;
+  }
+
+  return { signUp, signIn, signOut, getUser, getToken };
 })();
